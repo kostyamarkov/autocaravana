@@ -204,12 +204,16 @@ body {
     gap: 15px;
     margin: 15px 0;
     flex-wrap: wrap;
+    align-items: center; /* Выравнивает изображения по центру по высоте */
 }
 
 .image-pair .content-image {
     flex: 1 1 calc(50% - 8px);
     min-width: 200px;
     margin: 0;
+    height: auto;
+    object-fit: contain; /* Сохраняет исходные пропорции, не сжимает */
+    max-height: 400px; /* Максимальная высота для избежания чрезмерного увеличения */
 }
 
 .img-placeholder {
@@ -239,5 +243,6 @@ body {
     /* На мобилах парные изображения складываются в колонку */
     .image-pair .content-image {
         flex: 1 1 100%;
+        max-height: 300px;
     }
 }
