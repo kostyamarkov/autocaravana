@@ -1,30 +1,44 @@
-# Script to update version.js from the latest Git commit info
+# Script to update version.js from docs/version.txt file
+# This allows manual version management without Git automation
+
 $repoPath = Split-Path -Parent -Path $PSScriptRoot
+$versionFile = Join-Path $repoPath "docs\version.txt"
+$jsVersionFile = Join-Path $repoPath "js\version.js"
 
-# Get latest commit date and hash
-$commitInfo = git -C $repoPath log -1 --format="%ad %h" --date=format:"%Y-%m-%d"
-
-if ($LASTEXITCODE -eq 0 -and $commitInfo) {
-    $parts = $commitInfo -split '\s+'
-    $date = $parts[0]
-    $hash = $parts[1]
+# Read version from text file
+if (Test-Path $versionFile) {
+    $versionString = (Get-Content -Path $versionFile -Raw).Trim()
     
-    # Create version file content
-    $versionContent = @"
-// Auto-generated version info - updates on each commit
+    if ($versionString) {
+        # Parse version string (format: "YYYY-MM-DD hash")
+        $parts = $versionString -split '\s+'
+        if ($parts.Count -ge 2) {
+            $date = $parts[0]
+            $commit = $parts[1]
+            
+            # Create version.js content
+            $jsContent = @"
+// Version info - updated manually from docs/version.txt
 export const VERSION = {
     date: '$date',
-    commit: '$hash',
-    full: '$commitInfo'
+    commit: '$commit',
+    full: '$versionString'
 };
 "@
-    
-    # Write to version.js file
-    $versionFile = Join-Path $repoPath "js\version.js"
-    Set-Content -Path $versionFile -Value $versionContent -Encoding UTF8
-    
-    Write-Host "[OK] Version updated: $commitInfo"
+            
+            Set-Content -Path $jsVersionFile -Value $jsContent -Encoding UTF8
+            Write-Host "[OK] Version updated from docs/version.txt"
+            Write-Host "     Version: $versionString"
+        } else {
+            Write-Host "[ERROR] Invalid version format in docs/version.txt"
+            Write-Host "        Expected format: YYYY-MM-DD hash"
+            exit 1
+        }
+    } else {
+        Write-Host "[ERROR] docs/version.txt is empty"
+        exit 1
+    }
 } else {
-    Write-Host "[ERROR] Failed to get Git commit info"
+    Write-Host "[ERROR] docs/version.txt not found at $versionFile"
     exit 1
 }

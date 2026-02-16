@@ -1,42 +1,36 @@
 # Version Management System
 
-This project uses an automated version management system that automatically updates the application version based on the latest Git commit.
+This project uses a simple manual version management system. Version information is stored in a text file and can be updated manually.
 
 ## How It Works
 
-1. **`js/version.js`** - Contains the current application version (date and commit hash)
-2. **`scripts/update-version.ps1`** - PowerShell script that updates version.js with the latest commit info
-3. **`scripts/setup-hooks.ps1`** - Setup script to install the Git pre-commit hook
-4. **`.git/hooks/pre-commit`** - Git hook that automatically runs the update script before each commit
+1. **`docs/version.txt`** - Plain text file containing the application version in format: `YYYY-MM-DD hash`
+2. **`js/version.js`** - Generated JavaScript file containing VERSION export (auto-generated from version.txt)
+3. **`scripts/update-version.ps1`** - PowerShell script that reads from version.txt and generates js/version.js
 
-## Setup Instructions
+## Workflow
 
-### Initial Setup (One Time)
+### Updating the Version
 
-After cloning the repository, run the setup script to install Git hooks:
+1. Edit `docs/version.txt` with your desired version:
+   ```
+   2026-02-16 2954545
+   ```
 
-```powershell
-pwsh scripts/setup-hooks.ps1
-```
+2. Run the update script:
+   ```powershell
+   pwsh scripts/update-version.ps1
+   ```
 
-Or manually for Windows:
+3. This generates/updates `js/version.js` with the new version info
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-hooks.ps1
-```
+4. Commit both files:
+   ```bash
+   git add docs/version.txt js/version.js
+   git commit -m "chore: bump version to <version>"
+   ```
 
-### How It Works After Setup
-
-Every time you make a commit:
-
-1. Git triggers the pre-commit hook
-2. The hook runs `scripts/update-version.ps1`
-3. The script gets the latest commit date and hash
-4. `js/version.js` is updated automatically
-5. The updated file is staged for commit
-6. Your commit includes the updated version information
-
-### Accessing Version Info
+### Accessing Version Info in Code
 
 In any JavaScript module:
 
@@ -44,50 +38,53 @@ In any JavaScript module:
 import { VERSION } from './version.js';
 
 console.log(VERSION.date);     // e.g., '2026-02-16'
-console.log(VERSION.commit);   // e.g., 'abc123ef'
-console.log(VERSION.full);     // e.g., '2026-02-16 abc123ef'
-```
-
-### Manual Version Update
-
-If you need to manually update the version without committing:
-
-```powershell
-pwsh scripts/update-version.ps1
+console.log(VERSION.commit);   // e.g., '2954545'
+console.log(VERSION.full);     // e.g., '2026-02-16 2954545'
 ```
 
 ## Version Format
 
-The version string follows this format: `YYYY-MM-DD <short-commit-hash>`
+The version string in `docs/version.txt` uses the format:
 
-Example: `2026-02-16 fb956f7`
-
-## Troubleshooting
-
-### Git Hook Not Running
-
-1. Verify the hook is installed:
-   ```powershell
-   Test-Path .git\hooks\pre-commit
-   ```
-
-2. Reinstall the hook:
-   ```powershell
-   pwsh scripts/setup-hooks.ps1
-   ```
-
-### PowerShell Execution Policy Error
-
-If you get an execution policy error, run:
-
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+YYYY-MM-DD <identifier>
 ```
 
-Or use the `-ExecutionPolicy Bypass` flag when running scripts.
+### Examples
 
-## Notes
+- `2026-02-16 2954545` - Date with short commit hash
+- `2026-02-16 1.0.0` - Date with semantic version
+- `2026-02-16 beta` - Date with version label
 
-- The version file is automatically included in each commit
-- Do not manually edit `js/version.js` - it will be overwritten on the next commit
-- The system requires PowerShell and Git to be installed
+## File Structure
+
+```
+project/
+├── docs/
+│   └── version.txt          # Source of truth for version
+├── js/
+│   └── version.js           # Generated from docs/version.txt
+├── scripts/
+│   └── update-version.ps1   # Script to generate js/version.js
+```
+
+## Manual Update Procedure
+
+When you want to bump the version:
+
+1. Decide on new version identifier
+2. Edit `docs/version.txt`:
+   ```
+   2026-02-16 abc1234
+   ```
+3. Run: `pwsh scripts/update-version.ps1`
+4. Check that `js/version.js` was updated correctly
+5. Commit both files
+
+## Important Notes
+
+- **`docs/version.txt`** is the source of truth - always update this first
+- **`js/version.js`** is auto-generated - do not edit manually
+- Both files should be committed to version control
+- No Git automation - version updates are entirely manual and explicit
+
