@@ -188,6 +188,30 @@ body {
     display: block;
 }
 
+/* Стили для встроенных изображений в контент */
+.content-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 15px 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    display: block;
+}
+
+/* Контейнер для парных изображений (рядом друг с другом) */
+.image-pair {
+    display: flex;
+    gap: 15px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+
+.image-pair .content-image {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 200px;
+    margin: 0;
+}
+
 .img-placeholder {
     width: 100%;
     min-height: 150px;
@@ -211,4 +235,9 @@ body {
     .content-header { padding: 15px 20px; }
     .section-content { padding: 20px; }
     .menu-list { overflow-y: scroll; }
+    
+    /* На мобилах парные изображения складываются в колонку */
+    .image-pair .content-image {
+        flex: 1 1 100%;
+    }
 }
