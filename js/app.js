@@ -1,4 +1,5 @@
 import { contentData } from './data.js';
+import { VERSION } from './version.js';
 
 // --- State ---
 const state = {
@@ -69,7 +70,7 @@ function renderMenu() {
     // Add version info at the bottom of menu
     const versionItem = document.createElement('li');
     versionItem.classList.add('menu-version');
-    versionItem.textContent = 'Версия: 2026-02-16 b6144ed';
+    versionItem.textContent = `Версия: ${VERSION.full}`;
     dom.menuList.appendChild(versionItem);
 }
 
