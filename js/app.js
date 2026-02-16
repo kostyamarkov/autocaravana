@@ -65,6 +65,12 @@ function renderMenu() {
         
         dom.menuList.appendChild(li);
     });
+    
+    // Add version info at the bottom of menu
+    const versionItem = document.createElement('li');
+    versionItem.classList.add('menu-version');
+    versionItem.textContent = 'Версия: 2026-02-16 b6144ed';
+    dom.menuList.appendChild(versionItem);
 }
 
 function loadSection(highlightText = '') {
