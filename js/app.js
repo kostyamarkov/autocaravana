@@ -16,7 +16,10 @@ const dom = {
     searchInput: document.getElementById('searchInput'),
     searchResults: document.getElementById('searchResults'),
     clearBtn: document.getElementById('clearBtn'),
-    langButtons: document.querySelectorAll('.lang-btn')
+    langButtons: document.querySelectorAll('.lang-btn'),
+    imageModal: document.getElementById('imageModal'),
+    modalImage: document.getElementById('modalImage'),
+    modalClose: document.getElementById('modalClose')
 };
 
 // --- Initialization ---
@@ -88,6 +91,9 @@ function loadSection(highlightText = '') {
 
     dom.contentBody.innerHTML = content;
 
+    // Setup image modal for all images in content
+    setupImageModal();
+
     // Scroll to highlight if exists
     if (highlightText) {
         setTimeout(() => {
@@ -127,6 +133,29 @@ function applyHighlight(htmlContent, text) {
     // to avoid breaking HTML tags. For this specific content, regex is acceptable.
     const regex = new RegExp(`(${text})`, 'gi');
     return htmlContent.replace(regex, '<mark class="highlight">$1</mark>');
+}
+
+// --- Image Modal Functions ---
+
+function openModal(imgSrc) {
+    dom.modalImage.src = imgSrc;
+    dom.imageModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    dom.imageModal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+function setupImageModal() {
+    // Add click handlers to all images in content
+    const images = dom.contentBody.querySelectorAll('.content-image, .content-img');
+    images.forEach(img => {
+        img.addEventListener('click', (e) => {
+            openModal(img.src);
+        });
+    });
 }
 
 // --- Search Logic ---
@@ -192,6 +221,31 @@ function displaySearchResults(hits, query) {
 // --- Event Listeners ---
 
 function setupEventListeners() {
+    // Close search results when clicking outside
+    window.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-box')) {
+            dom.searchResults.style.display = 'none';
+        }
+    });
+
+    // Modal close button
+    dom.modalClose.addEventListener('click', closeModal);
+
+    // Close modal when clicking on the dark overlay (outside the image)
+    dom.imageModal.addEventListener('click', (e) => {
+        // Only close if clicking directly on the modal background, not the image or close button
+        if (e.target === dom.imageModal) {
+            closeModal();
+        }
+    });
+
+    // Close modal on Escape key
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && dom.imageModal.classList.contains('active')) {
+            closeModal();
+        }
+    });
+
     // Search Input
     dom.searchInput.addEventListener('input', (e) => {
         performSearch(e.target.value.toLowerCase().trim());
@@ -228,13 +282,6 @@ function setupEventListeners() {
             dom.searchResults.style.display = 'none';
             renderMenu();
             loadSection(dom.searchInput.value.toLowerCase().trim());
-        }
-    });
-
-    // Close search results when clicking outside
-    window.addEventListener('click', (e) => {
-        if (!e.target.closest('.search-box')) {
-            dom.searchResults.style.display = 'none';
         }
     });
 }
