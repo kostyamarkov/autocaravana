@@ -259,19 +259,20 @@ function setupEventListeners() {
         loadSection(); // Reload current section without highlight
     });
 
+    // TODO: Реализовать локализацию RU/EN в будущем
     // Language Switcher
-    dom.langButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const newLang = e.target.dataset.lang;
-            if (state.lang !== newLang) {
-                state.lang = newLang;
-                // Try to keep current ID if exists in new lang, else reset to 1
-                const exists = contentData[newLang].sections.some(s => s.id === state.currentId);
-                if (!exists) state.currentId = 1;
-                renderApp();
-            }
-        });
-    });
+    // dom.langButtons.forEach(btn => {
+    //     btn.addEventListener('click', (e) => {
+    //         const newLang = e.target.dataset.lang;
+    //         if (state.lang !== newLang) {
+    //             state.lang = newLang;
+    //             // Try to keep current ID if exists in new lang, else reset to 1
+    //             const exists = contentData[newLang].sections.some(s => s.id === state.currentId);
+    //             if (!exists) state.currentId = 1;
+    //             renderApp();
+    //         }
+    //     });
+    // });
 
     // Handle clicks on Search Results (Event Delegation)
     dom.searchResults.addEventListener('click', (e) => {
