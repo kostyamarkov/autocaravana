@@ -502,7 +502,7 @@ body {
         flex-direction: column;
         align-items: center;
         padding: 0;
-        overflow-y: auto;
+        overflow-y: overlay;
         -webkit-overflow-scrolling: touch;
         flex: 1;
         min-height: 0;
@@ -557,7 +557,7 @@ body {
         flex-direction: column;
         align-items: flex-start;
         padding: 0;
-        overflow-y: auto;
+        overflow-y: overlay;
         -webkit-overflow-scrolling: touch;
         flex: 1;
         min-height: 0;
@@ -627,7 +627,7 @@ body {
     }
     
     .sidebar .menu-list::-webkit-scrollbar-track {
-        background: transparent;
+        background: transparent !important;
     }
     
     .sidebar .menu-list::-webkit-scrollbar-thumb {
