@@ -60,12 +60,15 @@ function init() {
 
 function applyInitialState() {
     if (isMobile()) {
-        // On mobile: menu is initially collapsed/hidden
+        // On mobile: menu starts as collapsed (70px), not expanded
         state.sidebarExpanded = false;
+        dom.sidebar.classList.remove('expanded');
     } else {
         // On desktop: apply saved state
         if (state.sidebarCollapsed) {
             dom.sidebar.classList.add('collapsed');
+        } else {
+            dom.sidebar.classList.remove('collapsed');
         }
     }
 }
@@ -126,8 +129,13 @@ function renderApp() {
     
     // Apply correct style based on screen size
     if (isMobile()) {
+        // On mobile: remove collapsed class, use expanded state instead
+        dom.sidebar.classList.remove('collapsed');
         applyMobileState();
     } else {
+        // On desktop: remove expanded class, use collapsed state instead
+        dom.sidebar.classList.remove('expanded');
+        dom.layout.classList.remove('menu-open');
         applyCollapsedState();
     }
 }
@@ -378,13 +386,23 @@ function setupEventListeners() {
 
     // Handle window resize for mobile/desktop switch
     window.addEventListener('resize', () => {
-        if (isMobile() && !state.sidebarExpanded && state.sidebarCollapsed) {
-            // Mobile mode - nothing special needed
-        } else if (!isMobile() && state.sidebarExpanded) {
-            // Switched to desktop - collapse mobile overlay
-            state.sidebarExpanded = false;
+        if (isMobile()) {
+            // Switched to mobile mode - show collapsed menu (70px)
+            dom.sidebar.classList.remove('collapsed');
             dom.sidebar.classList.remove('expanded');
+            dom.layout.classList.remove('menu-open');
+            state.sidebarExpanded = false;
             document.body.style.overflow = 'auto';
+        } else {
+            // Switched to desktop - apply saved collapsed state
+            dom.sidebar.classList.remove('expanded');
+            dom.layout.classList.remove('menu-open');
+            document.body.style.overflow = 'auto';
+            if (state.sidebarCollapsed) {
+                dom.sidebar.classList.add('collapsed');
+            } else {
+                dom.sidebar.classList.remove('collapsed');
+            }
         }
     });
 
