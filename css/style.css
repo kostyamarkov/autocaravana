@@ -489,6 +489,14 @@ body {
         display: none;
     }
     
+    .sidebar nav {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+    }
+    
     .sidebar .menu-list {
         display: flex;
         flex-direction: column;
@@ -534,6 +542,14 @@ body {
     .sidebar.expanded .search-box {
         display: block;
         flex-shrink: 0;
+    }
+    
+    .sidebar.expanded nav {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
     }
     
     .sidebar.expanded .menu-list {
