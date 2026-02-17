@@ -294,6 +294,9 @@ function debounce(func, wait) {
     };
 }
 
+// Scrollbar fade timeout
+let scrollTimeout;
+
 const performSearch = debounce((query) => {
     dom.clearBtn.style.display = query ? 'block' : 'none';
     
@@ -360,19 +363,23 @@ function setupEventListeners() {
     });
 
     // Handle scrollbar visibility - show on scroll, hide after scrolling stops
-    let scrollTimeout;
-    dom.menuList.addEventListener('scroll', () => {
-        // Show scrollbar
-        dom.menuList.classList.add('scrolling');
-        
-        // Clear previous timeout
-        clearTimeout(scrollTimeout);
-        
-        // Hide scrollbar after 1 second of no scrolling
-        scrollTimeout = setTimeout(() => {
-            dom.menuList.classList.remove('scrolling');
-        }, 1000);
-    }, { passive: true });
+    const initScrollbarFade = () => {
+        dom.menuList.addEventListener('scroll', () => {
+            // Show scrollbar
+            dom.menuList.classList.add('scrolling');
+            
+            // Clear previous timeout
+            clearTimeout(scrollTimeout);
+            
+            // Hide scrollbar after 1 second of no scrolling
+            scrollTimeout = setTimeout(() => {
+                dom.menuList.classList.remove('scrolling');
+            }, 1000);
+        }, { passive: true });
+    };
+    
+    // Initialize scrollbar fade on first load
+    initScrollbarFade();
 
     // Close search results when clicking outside
     window.addEventListener('click', (e) => {
