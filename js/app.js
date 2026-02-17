@@ -294,9 +294,6 @@ function debounce(func, wait) {
     };
 }
 
-// Scrollbar fade timeout
-let scrollTimeout;
-
 const performSearch = debounce((query) => {
     dom.clearBtn.style.display = query ? 'block' : 'none';
     
@@ -364,21 +361,30 @@ function setupEventListeners() {
 
     // Handle scrollbar visibility - show on scroll, hide after scrolling stops
     const initScrollbarFade = () => {
-        dom.menuList.addEventListener('scroll', () => {
-            // Show scrollbar
-            dom.menuList.classList.add('scrolling');
+        const updateFadeGradients = () => {
+            const list = dom.menuList;
+            const hasScrollTop = list.scrollTop > 0;
+            const hasScrollBottom = list.scrollTop < (list.scrollHeight - list.clientHeight - 5);
             
-            // Clear previous timeout
-            clearTimeout(scrollTimeout);
+            if (hasScrollTop) {
+                list.classList.add('has-scroll-top');
+            } else {
+                list.classList.remove('has-scroll-top');
+            }
             
-            // Hide scrollbar after 1 second of no scrolling
-            scrollTimeout = setTimeout(() => {
-                dom.menuList.classList.remove('scrolling');
-            }, 1000);
-        }, { passive: true });
+            if (hasScrollBottom) {
+                list.classList.add('has-scroll-bottom');
+            } else {
+                list.classList.remove('has-scroll-bottom');
+            }
+        };
+        
+        dom.menuList.addEventListener('scroll', updateFadeGradients, { passive: true });
+        // Check on initial load
+        updateFadeGradients();
     };
     
-    // Initialize scrollbar fade on first load
+    // Initialize scroll fade on first load
     initScrollbarFade();
 
     // Close search results when clicking outside
