@@ -108,6 +108,7 @@ function renderMenu() {
         // Append icon and text to list item
         li.appendChild(icon);
         li.appendChild(text);
+        li.setAttribute('title', section.title);
         
         if (section.id === state.currentId) {
             li.classList.add('active');

@@ -49,6 +49,10 @@ body {
     width: 70px;
 }
 
+.sidebar.collapsed .sidebar-header {
+    justify-content: center;
+}
+
 .sidebar.collapsed .sidebar-header h3 {
     display: none;
 }
@@ -70,6 +74,7 @@ body {
     justify-content: center;
     width: 100%;
     border-bottom: 1px solid rgba(255,255,255,0.05);
+    position: relative;
 }
 
 .sidebar.collapsed .menu-list li span {
@@ -85,6 +90,8 @@ body {
     height: 24px;
     margin: 0;
 }
+
+
 
 .sidebar-header {
     padding: var(--spacing-unit);
