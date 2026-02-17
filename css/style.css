@@ -148,6 +148,7 @@ body {
     padding: 15px;
     position: relative;
     background-color: var(--primary-color);
+    flex-shrink: 0;
 }
 
 .search-wrapper {
@@ -203,14 +204,41 @@ body {
 .search-item small { color: var(--text-muted); font-style: italic; }
 
 /* Навигация */
+nav {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
 .menu-list {
     list-style: none;
     padding: 0;
     margin: 0;
     overflow-y: auto;
-    flex-grow: 1;
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
+}
+
+/* Hide scrollbar for menu */
+.menu-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.menu-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.menu-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.menu-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
 }
 
 .menu-list li {
