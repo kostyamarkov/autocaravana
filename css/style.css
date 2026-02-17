@@ -451,18 +451,17 @@ nav {
     color: white;
     font-size: 48px;
     font-weight: 300;
-    line-height: 1;
+    line-height: 60px;
     cursor: pointer;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
     padding: 0;
     transition: all 0.3s ease;
     z-index: 1001;
     opacity: 0;
     pointer-events: none;
     text-align: center;
+    user-select: none;
 }
 
 .modal:hover .modal-nav {
