@@ -1,15 +1,39 @@
 import { contentData } from './data.js';
 import { VERSION } from './version.js';
 
+// --- Icon mapping by section ID ---
+const sectionIcons = {
+    1: 'general_info.png',
+    2: 'before_journey.png',
+    3: 'windows.png',
+    4: 'kitchen.png',
+    5: 'fridge.png',
+    6: 'electricity.png',
+    7: 'water.png',
+    8: 'shower.png',
+    9: 'toilet.png',
+    10: 'heating.png',
+    11: 'sleeping_area.png',
+    12: 'sleeping_area_additional.png',
+    13: 'dinning_area.png',
+    14: 'accessories_and_exterior.png',
+    15: 'parking_and_sleeping.png',
+    16: 'safety.png',
+    17: 'return.png'
+};
+
 // --- State ---
 const state = {
     lang: 'ru',
-    currentId: 1
+    currentId: 1,
+    sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true' ? true : false
 };
 
 // --- DOM Elements ---
 const dom = {
     sidebarTitle: document.getElementById('ui-title'),
+    sidebar: document.getElementById('sidebar'),
+    menuToggleBtn: document.getElementById('menuToggleBtn'),
     menuList: document.getElementById('menuList'),
     contentTitle: document.getElementById('current-section-title'),
     contentBody: document.getElementById('content-body'),
@@ -24,8 +48,24 @@ const dom = {
 
 // --- Initialization ---
 function init() {
+    applyCollapsedState();
     setupEventListeners();
     renderApp();
+}
+
+// --- Sidebar Toggle ---
+function applyCollapsedState() {
+    if (state.sidebarCollapsed) {
+        dom.sidebar.classList.add('collapsed');
+    } else {
+        dom.sidebar.classList.remove('collapsed');
+    }
+}
+
+function toggleSidebar() {
+    state.sidebarCollapsed = !state.sidebarCollapsed;
+    localStorage.setItem('sidebarCollapsed', state.sidebarCollapsed ? 'true' : 'false');
+    applyCollapsedState();
 }
 
 // --- Rendering ---
@@ -54,7 +94,20 @@ function renderMenu() {
     
     contentData[state.lang].sections.forEach(section => {
         const li = document.createElement('li');
-        li.textContent = section.title;
+        
+        // Create icon element
+        const icon = document.createElement('img');
+        icon.src = `pictures/icons/${sectionIcons[section.id]}`;
+        icon.className = 'menu-icon';
+        icon.alt = section.title;
+        
+        // Create text element
+        const text = document.createElement('span');
+        text.textContent = section.title;
+        
+        // Append icon and text to list item
+        li.appendChild(icon);
+        li.appendChild(text);
         
         if (section.id === state.currentId) {
             li.classList.add('active');
@@ -221,6 +274,9 @@ function displaySearchResults(hits, query) {
 // --- Event Listeners ---
 
 function setupEventListeners() {
+    // Menu toggle button
+    dom.menuToggleBtn.addEventListener('click', toggleSidebar);
+
     // Close search results when clicking outside
     window.addEventListener('click', (e) => {
         if (!e.target.closest('.search-box')) {

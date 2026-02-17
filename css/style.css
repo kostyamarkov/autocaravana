@@ -42,17 +42,82 @@ body {
     flex-direction: column;
     flex-shrink: 0;
     border-right: 1px solid rgba(0,0,0,0.1);
+    transition: width 0.3s ease;
+}
+
+.sidebar.collapsed {
+    width: 70px;
+}
+
+.sidebar.collapsed .sidebar-header h3 {
+    display: none;
+}
+
+.sidebar.collapsed .search-box {
+    display: none;
+}
+
+.sidebar.collapsed .menu-list {
+    display: none;
 }
 
 .sidebar-header {
     padding: var(--spacing-unit);
     background-color: var(--secondary-color);
     text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
 }
 
 .sidebar-header h3 {
     margin: 0;
     font-size: 1.2rem;
+    flex-grow: 1;
+}
+
+/* Hamburger Menu Button */
+.menu-toggle {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.menu-toggle span {
+    display: block;
+    width: 24px;
+    height: 3px;
+    background-color: var(--white);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.menu-toggle:hover span {
+    background-color: var(--accent-color);
+}
+
+/* Collapsed state animations for hamburger button */
+.sidebar.collapsed .menu-toggle span:nth-child(1) {
+    transform: rotate(-45deg) translate(-8px, 8px);
+}
+
+.sidebar.collapsed .menu-toggle span:nth-child(2) {
+    opacity: 0;
+}
+
+.sidebar.collapsed .menu-toggle span:nth-child(3) {
+    transform: rotate(45deg) translate(-8px, -8px);
 }
 
 /* Поиск */
@@ -131,6 +196,22 @@ body {
     border-bottom: 1px solid rgba(255,255,255,0.05);
     font-size: 14px;
     transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.menu-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+    opacity: 0.9;
+    transition: opacity 0.2s;
+}
+
+.menu-list li:hover .menu-icon {
+    opacity: 1;
 }
 
 .menu-list li:hover { background-color: rgba(255,255,255,0.1); }
