@@ -263,7 +263,7 @@ nav {
     font-size: 11px;
     color: rgba(255,255,255,0.5);
     border-bottom: none;
-    margin-top: auto;
+    margin-top: 8px;
     text-align: center;
     letter-spacing: 0.5px;
     flex-shrink: 0;
