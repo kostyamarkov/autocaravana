@@ -23,14 +23,18 @@ const sectionIcons = {
 };
 
 // --- State ---
+const isMobile = () => window.innerWidth <= 768;
+
 const state = {
     lang: 'ru',
     currentId: 1,
-    sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true' ? true : false
+    sidebarCollapsed: isMobile() ? true : (localStorage.getItem('sidebarCollapsed') === 'true' ? true : false),
+    sidebarExpanded: false // For mobile overlay state
 };
 
 // --- DOM Elements ---
 const dom = {
+    layout: document.querySelector('.layout'),
     sidebarTitle: document.getElementById('ui-title'),
     sidebar: document.getElementById('sidebar'),
     menuToggleBtn: document.getElementById('menuToggleBtn'),
@@ -48,12 +52,36 @@ const dom = {
 
 // --- Initialization ---
 function init() {
-    applyCollapsedState();
+    applyInitialState();
     setupEventListeners();
     renderApp();
 }
 
+function applyInitialState() {
+    if (isMobile()) {
+        // On mobile: menu is initially collapsed/hidden
+        state.sidebarExpanded = false;
+    } else {
+        // On desktop: apply saved state
+        if (state.sidebarCollapsed) {
+            dom.sidebar.classList.add('collapsed');
+        }
+    }
+}
+
 // --- Sidebar Toggle ---
+function applyMobileState() {
+    if (state.sidebarExpanded) {
+        dom.sidebar.classList.add('expanded');
+        dom.layout.classList.add('menu-open');
+        document.body.style.overflow = 'hidden'; // Prevent background scroll
+    } else {
+        dom.sidebar.classList.remove('expanded');
+        dom.layout.classList.remove('menu-open');
+        document.body.style.overflow = 'auto';
+    }
+}
+
 function applyCollapsedState() {
     if (state.sidebarCollapsed) {
         dom.sidebar.classList.add('collapsed');
@@ -76,10 +104,17 @@ function updateMenuTooltips() {
 }
 
 function toggleSidebar() {
-    state.sidebarCollapsed = !state.sidebarCollapsed;
-    localStorage.setItem('sidebarCollapsed', state.sidebarCollapsed ? 'true' : 'false');
-    applyCollapsedState();
-    updateMenuTooltips();
+    if (isMobile()) {
+        // On mobile: toggle expanded state (overlay)
+        state.sidebarExpanded = !state.sidebarExpanded;
+        applyMobileState();
+    } else {
+        // On desktop: toggle collapsed state
+        state.sidebarCollapsed = !state.sidebarCollapsed;
+        localStorage.setItem('sidebarCollapsed', state.sidebarCollapsed ? 'true' : 'false');
+        applyCollapsedState();
+        updateMenuTooltips();
+    }
 }
 
 // --- Rendering ---
@@ -87,6 +122,13 @@ function renderApp() {
     updateStaticText();
     renderMenu();
     loadSection();
+    
+    // Apply correct style based on screen size
+    if (isMobile()) {
+        applyMobileState();
+    } else {
+        applyCollapsedState();
+    }
 }
 
 function updateStaticText() {
@@ -132,7 +174,12 @@ function renderMenu() {
             state.currentId = section.id;
             renderMenu(); // Re-render to update active class
             loadSection();
-            // On mobile, close sidebar logic could go here if implemented
+            
+            // On mobile, close sidebar after selection
+            if (isMobile() && state.sidebarExpanded) {
+                state.sidebarExpanded = false;
+                applyMobileState();
+            }
         });
         
         dom.menuList.appendChild(li);
@@ -291,6 +338,17 @@ function displaySearchResults(hits, query) {
 function setupEventListeners() {
     // Menu toggle button
     dom.menuToggleBtn.addEventListener('click', toggleSidebar);
+    
+    // Close mobile sidebar when clicking on overlay (dark area)
+    document.addEventListener('click', (e) => {
+        if (isMobile() && state.sidebarExpanded) {
+            // If click is not on sidebar or menuToggleBtn, close the menu
+            if (!dom.sidebar.contains(e.target) && !dom.menuToggleBtn.contains(e.target)) {
+                state.sidebarExpanded = false;
+                applyMobileState();
+            }
+        }
+    });
 
     // Close search results when clicking outside
     window.addEventListener('click', (e) => {
@@ -314,6 +372,18 @@ function setupEventListeners() {
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && dom.imageModal.classList.contains('active')) {
             closeModal();
+        }
+    });
+
+    // Handle window resize for mobile/desktop switch
+    window.addEventListener('resize', () => {
+        if (isMobile() && !state.sidebarExpanded && state.sidebarCollapsed) {
+            // Mobile mode - nothing special needed
+        } else if (!isMobile() && state.sidebarExpanded) {
+            // Switched to desktop - collapse mobile overlay
+            state.sidebarExpanded = false;
+            dom.sidebar.classList.remove('expanded');
+            document.body.style.overflow = 'auto';
         }
     });
 
