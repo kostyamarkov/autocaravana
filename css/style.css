@@ -57,8 +57,33 @@ body {
     display: none;
 }
 
+/* Свернутое меню - показываем только иконки */
 .sidebar.collapsed .menu-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+}
+
+.sidebar.collapsed .menu-list li {
+    padding: 15px;
+    justify-content: center;
+    width: 100%;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.sidebar.collapsed .menu-list li span {
     display: none;
+}
+
+.sidebar.collapsed .menu-list li.menu-version {
+    display: none;
+}
+
+.sidebar.collapsed .menu-icon {
+    width: 24px;
+    height: 24px;
+    margin: 0;
 }
 
 .sidebar-header {
@@ -105,19 +130,6 @@ body {
 
 .menu-toggle:hover span {
     background-color: var(--accent-color);
-}
-
-/* Collapsed state animations for hamburger button */
-.sidebar.collapsed .menu-toggle span:nth-child(1) {
-    transform: rotate(-45deg) translate(-8px, 8px);
-}
-
-.sidebar.collapsed .menu-toggle span:nth-child(2) {
-    opacity: 0;
-}
-
-.sidebar.collapsed .menu-toggle span:nth-child(3) {
-    transform: rotate(45deg) translate(-8px, -8px);
 }
 
 /* Поиск */
