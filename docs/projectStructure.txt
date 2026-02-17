@@ -1,7 +1,0 @@
-/manual-project
-  ├── index.html
-  ├── css/
-  │    └── style.css
-  └── js/
-       ├── data.js
-       └── app.js

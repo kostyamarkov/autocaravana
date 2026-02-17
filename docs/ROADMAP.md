@@ -22,7 +22,7 @@
 
 **Текущее состояние (что уже есть)**
 
-- Структура проекта (статический): `index.html`, `css/style.css`, `js/app.js`, `js/data.js`.
+- Структура проекта (статический): `index.html`, `css/style.css`, `js/app.js`, `js/data.js`. См. полную структуру: [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md).
 - Создан файл с описанием стека и назначением страниц: [TECHSTACK_AND_PAGES.md](TECHSTACK_AND_PAGES.md).
 
 **Требуемый функционал (задача)**
