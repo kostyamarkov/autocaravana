@@ -511,18 +511,18 @@ nav {
 @media (max-width: 768px) {
     :root {
         --content-max-width: calc(100% - 40px);
-        --content-padding-x: 20px;
+        --content-padding-x: 10px;
     }
     
     .layout { flex-direction: row; }
     
-    /* Mobile sidebar - starts as collapsed (70px), expands on button click */
+    /* Mobile sidebar - starts as collapsed (60px), expands on button click */
     .sidebar { 
         position: fixed;
         left: 0;
         top: 0;
         height: 100%;
-        width: 70px;
+        width: 60px;
         z-index: 999;
         transition: width 0.3s ease;
         box-shadow: 2px 0 10px rgba(0,0,0,0.3);
@@ -679,7 +679,7 @@ nav {
     .main-content {
         width: 100%;
         position: relative;
-        margin-left: 70px;
+        margin-left: 60px;
     }
     
     .sidebar.expanded ~ .main-content {
