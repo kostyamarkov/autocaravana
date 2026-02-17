@@ -507,7 +507,6 @@ body {
         flex: 1;
         min-height: 0;
         scrollbar-width: none;
-        position: relative;
     }
     
     /* Hide scrollbar */
@@ -569,7 +568,6 @@ body {
         flex: 1;
         min-height: 0;
         scrollbar-width: none;
-        position: relative;
     }
     
     /* Hide scrollbar for expanded menu */
@@ -633,39 +631,5 @@ body {
     .image-pair .content-image {
         flex: 1 1 100%;
         max-height: 300px;
-    }
-    
-    /* Fade gradient effects for menu scrolling */
-    .sidebar .menu-list::before,
-    .sidebar .menu-list::after {
-        content: '';
-        position: absolute;
-        left: 0;
-        right: 0;
-        height: 20px;
-        pointer-events: none;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        z-index: 10;
-    }
-    
-    /* Top fade - shows when not at top */
-    .sidebar .menu-list::before {
-        top: 0;
-        background: linear-gradient(180deg, rgba(44, 62, 80, 1) 0%, rgba(44, 62, 80, 0) 100%);
-    }
-    
-    .sidebar .menu-list.has-scroll-top::before {
-        opacity: 1;
-    }
-    
-    /* Bottom fade - shows when not at bottom */
-    .sidebar .menu-list::after {
-        bottom: 0;
-        background: linear-gradient(0deg, rgba(44, 62, 80, 1) 0%, rgba(44, 62, 80, 0) 100%);
-    }
-    
-    .sidebar .menu-list.has-scroll-bottom::after {
-        opacity: 1;
     }
 }

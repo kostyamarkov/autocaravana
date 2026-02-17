@@ -359,34 +359,6 @@ function setupEventListeners() {
         }
     });
 
-    // Handle scrollbar visibility - show on scroll, hide after scrolling stops
-    const initScrollbarFade = () => {
-        const updateFadeGradients = () => {
-            const list = dom.menuList;
-            const hasScrollTop = list.scrollTop > 0;
-            const hasScrollBottom = list.scrollTop < (list.scrollHeight - list.clientHeight - 5);
-            
-            if (hasScrollTop) {
-                list.classList.add('has-scroll-top');
-            } else {
-                list.classList.remove('has-scroll-top');
-            }
-            
-            if (hasScrollBottom) {
-                list.classList.add('has-scroll-bottom');
-            } else {
-                list.classList.remove('has-scroll-bottom');
-            }
-        };
-        
-        dom.menuList.addEventListener('scroll', updateFadeGradients, { passive: true });
-        // Check on initial load
-        updateFadeGradients();
-    };
-    
-    // Initialize scroll fade on first load
-    initScrollbarFade();
-
     // Close search results when clicking outside
     window.addEventListener('click', (e) => {
         if (!e.target.closest('.search-box')) {
