@@ -633,9 +633,15 @@ body {
     .sidebar .menu-list::-webkit-scrollbar-thumb {
         background: rgba(255, 255, 255, 0.3);
         border-radius: 3px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
     }
     
     .sidebar .menu-list::-webkit-scrollbar-thumb:hover {
         background: rgba(255, 255, 255, 0.5);
+    }
+    
+    .sidebar .menu-list.scrolling::-webkit-scrollbar-thumb {
+        opacity: 1;
     }
 }

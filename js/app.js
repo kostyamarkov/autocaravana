@@ -359,6 +359,21 @@ function setupEventListeners() {
         }
     });
 
+    // Handle scrollbar visibility - show on scroll, hide after scrolling stops
+    let scrollTimeout;
+    dom.menuList.addEventListener('scroll', () => {
+        // Show scrollbar
+        dom.menuList.classList.add('scrolling');
+        
+        // Clear previous timeout
+        clearTimeout(scrollTimeout);
+        
+        // Hide scrollbar after 1 second of no scrolling
+        scrollTimeout = setTimeout(() => {
+            dom.menuList.classList.remove('scrolling');
+        }, 1000);
+    }, { passive: true });
+
     // Close search results when clicking outside
     window.addEventListener('click', (e) => {
         if (!e.target.closest('.search-box')) {
