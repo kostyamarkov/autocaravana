@@ -466,7 +466,7 @@ body {
         box-shadow: 2px 0 10px rgba(0,0,0,0.3);
         display: flex;
         flex-direction: column;
-        overflow: hidden;
+        overflow: visible;
     }
     
     /* When expanding on mobile */
@@ -478,6 +478,7 @@ body {
     /* Mobile always shows collapsed visual style by default */
     .sidebar .sidebar-header {
         justify-content: center;
+        flex-shrink: 0;
     }
     
     .sidebar .sidebar-header h3 {
@@ -523,6 +524,7 @@ body {
     /* When sidebar is expanded, show full menu */
     .sidebar.expanded .sidebar-header {
         justify-content: space-between;
+        flex-shrink: 0;
     }
     
     .sidebar.expanded .sidebar-header h3 {
@@ -531,6 +533,7 @@ body {
     
     .sidebar.expanded .search-box {
         display: block;
+        flex-shrink: 0;
     }
     
     .sidebar.expanded .menu-list {
