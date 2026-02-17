@@ -28,7 +28,7 @@ body {
     background-color: var(--bg-color);
     color: var(--text-color);
     height: 100vh;
-    overflow: hidden; /* Чтобы скроллились только области */
+    overflow: hidden;
 }
 
 /* Раскладка (Layout) */
@@ -262,7 +262,7 @@ body {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-y: auto;
     position: relative;
 }
 
@@ -300,7 +300,6 @@ body {
 
 .section-content {
     flex-grow: 1;
-    overflow-y: auto;
     padding: 30px var(--content-padding-x);
     line-height: 1.6;
     max-width: var(--content-max-width);
