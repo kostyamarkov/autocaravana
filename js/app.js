@@ -60,12 +60,26 @@ function applyCollapsedState() {
     } else {
         dom.sidebar.classList.remove('collapsed');
     }
+    updateMenuTooltips();
+}
+
+function updateMenuTooltips() {
+    // Show title only when sidebar is collapsed
+    const menuItems = dom.menuList.querySelectorAll('li:not(.menu-version)');
+    menuItems.forEach(item => {
+        if (state.sidebarCollapsed) {
+            item.setAttribute('title', item.dataset.sectionTitle);
+        } else {
+            item.removeAttribute('title');
+        }
+    });
 }
 
 function toggleSidebar() {
     state.sidebarCollapsed = !state.sidebarCollapsed;
     localStorage.setItem('sidebarCollapsed', state.sidebarCollapsed ? 'true' : 'false');
     applyCollapsedState();
+    updateMenuTooltips();
 }
 
 // --- Rendering ---
@@ -108,7 +122,7 @@ function renderMenu() {
         // Append icon and text to list item
         li.appendChild(icon);
         li.appendChild(text);
-        li.setAttribute('title', section.title);
+        li.dataset.sectionTitle = section.title; // Store title in data attribute
         
         if (section.id === state.currentId) {
             li.classList.add('active');
