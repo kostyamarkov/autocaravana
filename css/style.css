@@ -502,10 +502,12 @@ body {
         flex-direction: column;
         align-items: center;
         padding: 0;
-        overflow-y: overlay;
+        overflow-y: scroll;
         -webkit-overflow-scrolling: touch;
         flex: 1;
         min-height: 0;
+        scrollbar-gutter: stable;
+        scrollbar-width: thin;
     }
     
     .sidebar .menu-list li {
@@ -557,10 +559,12 @@ body {
         flex-direction: column;
         align-items: flex-start;
         padding: 0;
-        overflow-y: overlay;
+        overflow-y: scroll;
         -webkit-overflow-scrolling: touch;
         flex: 1;
         min-height: 0;
+        scrollbar-gutter: stable;
+        scrollbar-width: thin;
     }
     
     .sidebar.expanded .menu-list li {
@@ -624,16 +628,19 @@ body {
     /* Custom scrollbar for mobile menu */
     .sidebar .menu-list::-webkit-scrollbar {
         width: 6px;
+        background: transparent;
     }
     
     .sidebar .menu-list::-webkit-scrollbar-track {
         background: transparent !important;
+        margin-right: 0;
     }
     
     .sidebar .menu-list::-webkit-scrollbar-thumb {
         background: rgba(255, 255, 255, 0);
         border-radius: 3px;
         transition: background 0.3s ease;
+        margin-right: 0;
     }
     
     .sidebar .menu-list::-webkit-scrollbar-thumb:hover {
@@ -643,5 +650,14 @@ body {
     .sidebar .menu-list.scrolling::-webkit-scrollbar-thumb {
         background: rgba(255, 255, 255, 0.3);
         transition: background 0.3s ease;
+    }
+    
+    /* Firefox scrollbar */
+    .sidebar .menu-list {
+        scrollbar-color: rgba(255, 255, 255, 0) transparent;
+    }
+    
+    .sidebar .menu-list.scrolling {
+        scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
     }
 }
