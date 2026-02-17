@@ -28,8 +28,9 @@ const isMobile = () => window.innerWidth <= 768;
 const state = {
     lang: 'ru',
     currentId: 1,
-    // Default to collapsed (true) on desktop unless explicitly set to expanded (false) in localStorage
-    sidebarCollapsed: isMobile() ? true : (localStorage.getItem('sidebarCollapsed') === 'false' ? false : true),
+    // Desktop: expanded by default (collapsed = false), unless explicitly set in localStorage
+    // Mobile: sidebarCollapsed not used (uses sidebarExpanded instead)
+    sidebarCollapsed: !isMobile() && (localStorage.getItem('sidebarCollapsed') === 'true'),
     sidebarExpanded: false // For mobile overlay state
 };
 
