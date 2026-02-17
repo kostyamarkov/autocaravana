@@ -12,7 +12,7 @@ autocaravana/
 │   ├── data.js               # Данные контента (описания элементов автодома)
 │   └── version.js            # Управление версией приложения
 ├── pictures/
-│   ├── camperPhotos/         # Фотографии автодома (image1.png - image36.png)
+│   ├── camperPhotos/         # Фотографии автодома (image1.png - image44.png, все в PNG)
 │   └── icons/                # Иконки для пунктов меню (SVG/PNG)
 ├── docs/                     # Документация проекта
 │   ├── PROJECT_STRUCTURE.md  # Структура проекта (этот файл)
@@ -62,10 +62,11 @@ autocaravana/
   - Синхронизация с version.txt
 
 ### Изображения
-- **pictures/camperPhotos/** — 36 PNG изображений автодома:
-  - Именование: image1.png, image2.png, ... image36.png
+- **pictures/camperPhotos/** — 44 PNG изображений автодома:
+  - Именование: image1.png, image2.png, ... image44.png
   - Используются в контенте через `<img class="content-image">`
   - Все изображения кликабельны (открывают модальное окно)
+  - Все изображения переведены в PNG формат (из исходных WebP)
 
 - **pictures/icons/** — иконки для меню:
   - SVG или PNG иконки для каждого пункта меню
