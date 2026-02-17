@@ -31,7 +31,10 @@ const state = {
     // Desktop: expanded by default (collapsed = false), unless explicitly set in localStorage
     // Mobile: sidebarCollapsed not used (uses sidebarExpanded instead)
     sidebarCollapsed: !isMobile() && (localStorage.getItem('sidebarCollapsed') === 'true'),
-    sidebarExpanded: false // For mobile overlay state
+    sidebarExpanded: false, // For mobile overlay state
+    // Image navigation state
+    currentPageImages: [], // Array of image elements from current page
+    currentImageIndex: -1  // Current image index in the array
 };
 
 // --- DOM Elements ---
@@ -49,7 +52,9 @@ const dom = {
     langButtons: document.querySelectorAll('.lang-btn'),
     imageModal: document.getElementById('imageModal'),
     modalImage: document.getElementById('modalImage'),
-    modalClose: document.getElementById('modalClose')
+    modalClose: document.getElementById('modalClose'),
+    modalPrev: document.getElementById('modalPrev'),
+    modalNext: document.getElementById('modalNext')
 };
 
 // --- Initialization ---
@@ -262,23 +267,67 @@ function applyHighlight(htmlContent, text) {
 
 // --- Image Modal Functions ---
 
-function openModal(imgSrc) {
+function openModal(imageIndex) {
+    if (imageIndex < 0 || imageIndex >= state.currentPageImages.length) return;
+    
+    state.currentImageIndex = imageIndex;
+    const imgSrc = state.currentPageImages[imageIndex].src;
+    
     dom.modalImage.src = imgSrc;
     dom.imageModal.classList.add('active');
     document.body.style.overflow = 'hidden';
+    
+    updateNavigationButtons();
 }
 
 function closeModal() {
     dom.imageModal.classList.remove('active');
     document.body.style.overflow = 'auto';
+    state.currentImageIndex = -1;
+}
+
+function navigateImage(direction) {
+    const newIndex = state.currentImageIndex + direction;
+    if (newIndex >= 0 && newIndex < state.currentPageImages.length) {
+        openModal(newIndex);
+    }
+}
+
+function updateNavigationButtons() {
+    const totalImages = state.currentPageImages.length;
+    const currentIndex = state.currentImageIndex;
+    
+    // Hide both arrows if only one image or no images
+    if (totalImages <= 1) {
+        dom.modalPrev.classList.add('hidden');
+        dom.modalNext.classList.add('hidden');
+        return;
+    }
+    
+    // Show/hide previous arrow
+    if (currentIndex <= 0) {
+        dom.modalPrev.classList.add('hidden');
+    } else {
+        dom.modalPrev.classList.remove('hidden');
+    }
+    
+    // Show/hide next arrow
+    if (currentIndex >= totalImages - 1) {
+        dom.modalNext.classList.add('hidden');
+    } else {
+        dom.modalNext.classList.remove('hidden');
+    }
 }
 
 function setupImageModal() {
-    // Add click handlers to all images in content
+    // Collect all images from current page
     const images = dom.contentBody.querySelectorAll('.content-image, .content-img');
-    images.forEach(img => {
+    state.currentPageImages = Array.from(images);
+    
+    // Add click handlers to all images in content
+    images.forEach((img, index) => {
         img.addEventListener('click', (e) => {
-            openModal(img.src);
+            openModal(index);
         });
     });
 }
@@ -370,6 +419,17 @@ function setupEventListeners() {
     // Modal close button
     dom.modalClose.addEventListener('click', closeModal);
 
+    // Modal navigation buttons
+    dom.modalPrev.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navigateImage(-1);
+    });
+
+    dom.modalNext.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navigateImage(1);
+    });
+
     // Close modal when clicking on the dark overlay (outside the image)
     dom.imageModal.addEventListener('click', (e) => {
         // Only close if clicking directly on the modal background, not the image or close button
@@ -378,10 +438,19 @@ function setupEventListeners() {
         }
     });
 
-    // Close modal on Escape key
+    // Close modal on Escape key, navigate with arrow keys
     window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && dom.imageModal.classList.contains('active')) {
-            closeModal();
+        if (dom.imageModal.classList.contains('active')) {
+            if (e.key === 'Escape') {
+                closeModal();
+            } else if (state.currentPageImages.length > 1) {
+                // Only allow arrow navigation if there's more than one image
+                if (e.key === 'ArrowLeft') {
+                    navigateImage(-1);
+                } else if (e.key === 'ArrowRight') {
+                    navigateImage(1);
+                }
+            }
         }
     });
 
