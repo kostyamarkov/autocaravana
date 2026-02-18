@@ -347,8 +347,8 @@ function debounce(func, wait) {
 const performSearch = debounce((query) => {
     dom.clearBtn.style.display = query ? 'block' : 'none';
     
-    if (query.length < 2) {
-        dom.searchResults.style.display = 'none';
+    if (query.length < 3) {
+        displaySearchMessage('Введите хотя бы 3 символа');
         return;
     }
 
@@ -378,6 +378,11 @@ const performSearch = debounce((query) => {
     displaySearchResults(hits, query);
 }, 300); // 300ms delay
 
+function displaySearchMessage(message) {
+    dom.searchResults.innerHTML = `<div class="search-message">${message}</div>`;
+    dom.searchResults.style.display = 'block';
+}
+
 function displaySearchResults(hits, query) {
     if (hits.length > 0) {
         dom.searchResults.innerHTML = hits.slice(0, 7).map(h => `
@@ -388,7 +393,7 @@ function displaySearchResults(hits, query) {
         `).join('');
         dom.searchResults.style.display = 'block';
     } else {
-        dom.searchResults.style.display = 'none';
+        displaySearchMessage('Совпадений не найдено');
     }
 }
 
@@ -513,6 +518,12 @@ function setupEventListeners() {
             dom.searchResults.style.display = 'none';
             renderMenu();
             loadSection(dom.searchInput.value.toLowerCase().trim());
+
+            // On mobile, close sidebar after selecting search result
+            if (isMobile() && state.sidebarExpanded) {
+                state.sidebarExpanded = false;
+                applyMobileState();
+            }
         }
     });
 }

@@ -203,6 +203,12 @@ body {
 .search-item b { color: var(--accent-color); display: block; margin-bottom: 4px; }
 .search-item small { color: var(--text-muted); font-style: italic; }
 
+.search-message {
+    padding: 12px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
 /* Навигация */
 nav {
     display: flex;
