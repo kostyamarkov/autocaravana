@@ -34,8 +34,17 @@ const state = {
     sidebarExpanded: false, // For mobile overlay state
     // Image navigation state
     currentPageImages: [], // Array of image elements from current page
-    currentImageIndex: -1  // Current image index in the array
+    currentImageIndex: -1,  // Current image index in the array
+    // Swipe navigation state
+    swipeStartX: 0,
+    swipeStartY: 0,
+    swipeCurrentX: 0,
+    swipeActivePointerId: null,
+    swipeInProgress: false
 };
+
+const SWIPE_THRESHOLD_PX = 50;
+const SWIPE_MAX_VERTICAL_DRIFT_PX = 80;
 
 // --- DOM Elements ---
 const dom = {
@@ -84,11 +93,9 @@ function applyMobileState() {
     if (state.sidebarExpanded) {
         dom.sidebar.classList.add('expanded');
         dom.layout.classList.add('menu-open');
-        document.body.style.overflow = 'hidden'; // Prevent background scroll
     } else {
         dom.sidebar.classList.remove('expanded');
         dom.layout.classList.remove('menu-open');
-        document.body.style.overflow = 'auto';
     }
 }
 
@@ -282,7 +289,6 @@ function openModal(imageIndex) {
 
 function closeModal() {
     dom.imageModal.classList.remove('active');
-    document.body.style.overflow = 'auto';
     state.currentImageIndex = -1;
 }
 
@@ -317,6 +323,109 @@ function updateNavigationButtons() {
     } else {
         dom.modalNext.classList.remove('hidden');
     }
+}
+
+function resetSwipeState() {
+    state.swipeStartX = 0;
+    state.swipeStartY = 0;
+    state.swipeCurrentX = 0;
+    state.swipeActivePointerId = null;
+    state.swipeInProgress = false;
+}
+
+function startSwipeTracking(startX, startY, pointerId = null) {
+    state.swipeStartX = startX;
+    state.swipeStartY = startY;
+    state.swipeCurrentX = startX;
+    state.swipeActivePointerId = pointerId;
+    state.swipeInProgress = true;
+}
+
+function updateSwipeTracking(currentX) {
+    if (!state.swipeInProgress) return;
+    state.swipeCurrentX = currentX;
+}
+
+function finishSwipeTracking(endX, endY) {
+    if (!state.swipeInProgress || state.currentPageImages.length <= 1) {
+        resetSwipeState();
+        return;
+    }
+
+    const deltaX = endX - state.swipeStartX;
+    const deltaY = Math.abs(endY - state.swipeStartY);
+    const isHorizontalSwipe = Math.abs(deltaX) >= SWIPE_THRESHOLD_PX && deltaY <= SWIPE_MAX_VERTICAL_DRIFT_PX;
+
+    if (isHorizontalSwipe) {
+        if (deltaX < 0) {
+            navigateImage(1);
+        } else {
+            navigateImage(-1);
+        }
+    }
+
+    resetSwipeState();
+}
+
+function setupModalSwipe() {
+    const supportsPointer = 'PointerEvent' in window;
+
+    if (supportsPointer) {
+        dom.modalImage.addEventListener('pointerdown', (e) => {
+            if (!dom.imageModal.classList.contains('active')) return;
+            if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
+
+            startSwipeTracking(e.clientX, e.clientY, e.pointerId);
+            dom.modalImage.setPointerCapture(e.pointerId);
+        });
+
+        dom.modalImage.addEventListener('pointermove', (e) => {
+            if (!state.swipeInProgress) return;
+            if (state.swipeActivePointerId !== e.pointerId) return;
+
+            updateSwipeTracking(e.clientX);
+        });
+
+        dom.modalImage.addEventListener('pointerup', (e) => {
+            if (!state.swipeInProgress) return;
+            if (state.swipeActivePointerId !== e.pointerId) return;
+
+            finishSwipeTracking(e.clientX, e.clientY);
+        });
+
+        dom.modalImage.addEventListener('pointercancel', () => {
+            resetSwipeState();
+        });
+
+        return;
+    }
+
+    dom.modalImage.addEventListener('touchstart', (e) => {
+        if (!dom.imageModal.classList.contains('active')) return;
+        if (e.touches.length !== 1) return;
+
+        const touch = e.touches[0];
+        startSwipeTracking(touch.clientX, touch.clientY);
+    }, { passive: true });
+
+    dom.modalImage.addEventListener('touchmove', (e) => {
+        if (!state.swipeInProgress) return;
+        if (e.touches.length !== 1) return;
+
+        const touch = e.touches[0];
+        updateSwipeTracking(touch.clientX);
+    }, { passive: true });
+
+    dom.modalImage.addEventListener('touchend', (e) => {
+        if (!state.swipeInProgress) return;
+
+        const touch = e.changedTouches[0];
+        finishSwipeTracking(touch.clientX, touch.clientY);
+    }, { passive: true });
+
+    dom.modalImage.addEventListener('touchcancel', () => {
+        resetSwipeState();
+    }, { passive: true });
 }
 
 function setupImageModal() {
@@ -435,6 +544,9 @@ function setupEventListeners() {
         navigateImage(1);
     });
 
+    // Modal swipe navigation (touch/pen)
+    setupModalSwipe();
+
     // Close modal when clicking on the dark overlay (outside the image)
     dom.imageModal.addEventListener('click', (e) => {
         // Only close if clicking directly on the modal background, not the image or close button
@@ -467,12 +579,10 @@ function setupEventListeners() {
             dom.sidebar.classList.remove('expanded');
             dom.layout.classList.remove('menu-open');
             state.sidebarExpanded = false;
-            document.body.style.overflow = 'auto';
         } else {
             // Switched to desktop - apply saved collapsed state
             dom.sidebar.classList.remove('expanded');
             dom.layout.classList.remove('menu-open');
-            document.body.style.overflow = 'auto';
             if (state.sidebarCollapsed) {
                 dom.sidebar.classList.add('collapsed');
             } else {

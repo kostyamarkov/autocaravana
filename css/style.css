@@ -20,6 +20,8 @@
 
 html {
     scroll-behavior: smooth;
+    height: 100%;
+    overflow: hidden;
 }
 
 body {
@@ -418,6 +420,7 @@ nav {
     object-fit: contain;
     border-radius: 8px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    touch-action: pan-y;
 }
 
 .modal-close {
