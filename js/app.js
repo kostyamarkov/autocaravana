@@ -97,14 +97,9 @@ function init() {
     renderApp();
 }
 
-function isIPhoneMobile() {
-    return isMobile() && /iPhone|iPod/.test(navigator.userAgent);
-}
-
 function applyIPhoneNativeTopScrollMode() {
-    const enableNativeTopScroll = isIPhoneMobile();
-    document.documentElement.classList.toggle('ios-native-scroll', enableNativeTopScroll);
-    document.body.classList.toggle('ios-native-scroll', enableNativeTopScroll);
+    document.documentElement.classList.remove('ios-native-scroll');
+    document.body.classList.remove('ios-native-scroll');
 }
 
 function updateAppViewportHeight() {
@@ -280,11 +275,7 @@ function loadSection(highlightText = '') {
         }, 100);
     } else {
         // Reset scroll position when loading new section
-        if (isIPhoneMobile()) {
-            window.scrollTo({ top: 0, behavior: 'auto' });
-        } else {
-            dom.contentBody.parentElement.scrollTop = 0;
-        }
+        dom.contentBody.parentElement.scrollTop = 0;
     }
 }
 

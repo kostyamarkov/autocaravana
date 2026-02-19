@@ -35,21 +35,6 @@ body {
     overflow: hidden;
 }
 
-html.ios-native-scroll {
-    height: auto;
-    overflow-y: auto;
-}
-
-body.ios-native-scroll {
-    height: auto;
-    overflow-y: visible;
-}
-
-html.ios-native-scroll .layout {
-    height: auto;
-    min-height: var(--app-height);
-}
-
 .warning-text {
     color: var(--warning-color);
 }
@@ -585,10 +570,7 @@ nav {
         position: fixed;
         left: 0;
         top: 0;
-        bottom: 0;
-        height: auto;
-        min-height: -webkit-fill-available;
-        padding-bottom: env(safe-area-inset-bottom);
+        height: var(--app-height);
         width: 60px;
         z-index: 999;
         transition: width 0.3s ease;
@@ -596,36 +578,12 @@ nav {
         display: flex;
         flex-direction: column;
         overflow: visible;
-        isolation: isolate;
-    }
-
-    .sidebar::before {
-        content: '';
-        position: fixed;
-        left: 0;
-        top: 0;
-        width: 60px;
-        height: 100lvh;
-        background-color: var(--primary-color);
-        pointer-events: none;
-        z-index: -1;
     }
     
     /* When expanding on mobile */
     .sidebar.expanded {
         width: 90%;
         max-width: 300px;
-    }
-
-    .sidebar.expanded::before {
-        width: min(90vw, 300px);
-    }
-
-    @supports (height: 100lvh) {
-        .sidebar {
-            height: 100lvh;
-            bottom: auto;
-        }
     }
     
     /* Mobile always shows collapsed visual style by default */
@@ -786,13 +744,6 @@ nav {
         -webkit-overflow-scrolling: touch;
     }
 
-    html.ios-native-scroll .main-content {
-        height: auto;
-        min-height: var(--app-height);
-        overflow: visible;
-        -webkit-overflow-scrolling: auto;
-    }
-    
     .sidebar.expanded ~ .main-content {
         margin-left: 0;
     }
