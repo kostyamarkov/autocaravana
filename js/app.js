@@ -694,11 +694,14 @@ function setupEventListeners() {
         const item = e.target.closest('.search-item');
         if (item) {
             const id = parseInt(item.dataset.id);
+            const selectedQuery = dom.searchInput.value.toLowerCase().trim();
             state.currentId = id;
+            dom.searchInput.value = '';
+            dom.clearBtn.style.display = 'none';
             dom.searchResults.style.display = 'none';
             restoreViewportAfterSearch();
             renderMenu();
-            loadSection(dom.searchInput.value.toLowerCase().trim());
+            loadSection(selectedQuery);
 
             // On mobile, close sidebar after selecting search result
             if (isMobile() && state.sidebarExpanded) {
