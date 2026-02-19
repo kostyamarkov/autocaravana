@@ -52,10 +52,14 @@ const SWIPE_MAX_VERTICAL_DRIFT_PX = 80;
 const MODAL_MIN_SCALE = 1;
 const MODAL_MAX_SCALE = 4;
 const DOUBLE_TAP_THRESHOLD_MS = 280;
+const IOS_STATUS_BAR_TAP_ZONE_HEIGHT_PX = 20;
+const IOS_MAX_TAP_DURATION_MS = 300;
+const IOS_MAX_TAP_MOVE_PX = 12;
 
 // --- DOM Elements ---
 const dom = {
     layout: document.querySelector('.layout'),
+    mainContent: document.getElementById('main-content'),
     sidebarTitle: document.getElementById('ui-title'),
     sidebar: document.getElementById('sidebar'),
     menuToggleBtn: document.getElementById('menuToggleBtn'),
@@ -952,6 +956,77 @@ function setupEventListeners() {
             }
         }
     });
+
+    setupIPhoneTopTapScroll();
+}
+
+function setupIPhoneTopTapScroll() {
+    const isIPhone = /iPhone|iPod/.test(navigator.userAgent);
+    if (!isIPhone) {
+        return;
+    }
+
+    let touchStartY = 0;
+    let touchStartTime = 0;
+
+    document.addEventListener('touchstart', (event) => {
+        if (event.touches.length !== 1) {
+            touchStartTime = 0;
+            return;
+        }
+
+        const touch = event.touches[0];
+        touchStartY = touch.clientY;
+        touchStartTime = Date.now();
+    }, { passive: true });
+
+    document.addEventListener('touchend', (event) => {
+        if (touchStartTime === 0) {
+            return;
+        }
+
+        const tapDurationMs = Date.now() - touchStartTime;
+        touchStartTime = 0;
+
+        if (!isMobile()) {
+            return;
+        }
+
+        if (dom.imageModal.classList.contains('active')) {
+            return;
+        }
+
+        if (state.sidebarExpanded) {
+            return;
+        }
+
+        if (event.changedTouches.length === 0) {
+            return;
+        }
+
+        const touch = event.changedTouches[0];
+        const movedByPx = Math.abs(touch.clientY - touchStartY);
+        const isTapGesture = tapDurationMs <= IOS_MAX_TAP_DURATION_MS && movedByPx <= IOS_MAX_TAP_MOVE_PX;
+        if (!isTapGesture) {
+            return;
+        }
+
+        if (touch.clientY > IOS_STATUS_BAR_TAP_ZONE_HEIGHT_PX) {
+            return;
+        }
+
+        const isInsideSidebar = dom.sidebar.contains(event.target);
+        if (isInsideSidebar) {
+            return;
+        }
+
+        const scroller = dom.mainContent;
+        if (!scroller || scroller.scrollTop <= 0) {
+            return;
+        }
+
+        scroller.scrollTo({ top: 0, behavior: 'auto' });
+    }, { passive: true });
 }
 
 // Start the app
