@@ -597,11 +597,27 @@ nav {
         flex-direction: column;
         overflow: visible;
     }
+
+    .sidebar::after {
+        content: '';
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 60px;
+        height: 100lvh;
+        background-color: var(--primary-color);
+        pointer-events: none;
+        z-index: 998;
+    }
     
     /* When expanding on mobile */
     .sidebar.expanded {
         width: 90%;
         max-width: 300px;
+    }
+
+    .sidebar.expanded::after {
+        width: min(90vw, 300px);
     }
 
     @supports (height: 100lvh) {
