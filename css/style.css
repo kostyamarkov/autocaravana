@@ -35,6 +35,21 @@ body {
     overflow: hidden;
 }
 
+html.ios-native-scroll {
+    height: auto;
+    overflow-y: auto;
+}
+
+body.ios-native-scroll {
+    height: auto;
+    overflow-y: visible;
+}
+
+html.ios-native-scroll .layout {
+    height: auto;
+    min-height: var(--app-height);
+}
+
 .warning-text {
     color: var(--warning-color);
 }
@@ -740,6 +755,13 @@ nav {
         height: var(--app-height);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+    }
+
+    html.ios-native-scroll .main-content {
+        height: auto;
+        min-height: var(--app-height);
+        overflow: visible;
+        -webkit-overflow-scrolling: auto;
     }
     
     .sidebar.expanded ~ .main-content {
