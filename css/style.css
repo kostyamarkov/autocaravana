@@ -439,6 +439,7 @@ nav {
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
 }
 
 .modal-content img {
@@ -449,7 +450,10 @@ nav {
     object-fit: contain;
     border-radius: 8px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-    touch-action: pan-y;
+    touch-action: none;
+    transform-origin: center center;
+    user-select: none;
+    -webkit-user-drag: none;
 }
 
 .modal-close {

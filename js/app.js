@@ -49,6 +49,9 @@ const state = {
 
 const SWIPE_THRESHOLD_PX = 50;
 const SWIPE_MAX_VERTICAL_DRIFT_PX = 80;
+const MODAL_MIN_SCALE = 1;
+const MODAL_MAX_SCALE = 4;
+const DOUBLE_TAP_THRESHOLD_MS = 280;
 
 // --- DOM Elements ---
 const dom = {
@@ -69,6 +72,21 @@ const dom = {
     modalPrev: document.getElementById('modalPrev'),
     modalNext: document.getElementById('modalNext')
 };
+
+state.modalScale = MODAL_MIN_SCALE;
+state.modalTranslateX = 0;
+state.modalTranslateY = 0;
+state.modalPinchStartDistance = 0;
+state.modalPinchStartScale = MODAL_MIN_SCALE;
+state.modalPanStartX = 0;
+state.modalPanStartY = 0;
+state.modalPanBaseX = 0;
+state.modalPanBaseY = 0;
+state.modalIsPanning = false;
+state.modalLastTapTime = 0;
+state.modalLastTapX = 0;
+state.modalLastTapY = 0;
+state.modalActivePointers = new Map();
 
 // --- Initialization ---
 function init() {
@@ -291,6 +309,7 @@ function openModal(imageIndex) {
     const imgSrc = state.currentPageImages[imageIndex].src;
     
     dom.modalImage.src = imgSrc;
+    resetModalZoom();
     dom.imageModal.classList.add('active');
     document.body.style.overflow = 'hidden';
     
@@ -300,6 +319,7 @@ function openModal(imageIndex) {
 function closeModal() {
     dom.imageModal.classList.remove('active');
     state.currentImageIndex = -1;
+    resetModalZoom();
 }
 
 function navigateImage(direction) {
@@ -341,6 +361,80 @@ function resetSwipeState() {
     state.swipeCurrentX = 0;
     state.swipeActivePointerId = null;
     state.swipeInProgress = false;
+}
+
+function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+}
+
+function getDistanceBetweenPoints(pointA, pointB) {
+    const deltaX = pointA.x - pointB.x;
+    const deltaY = pointA.y - pointB.y;
+    return Math.hypot(deltaX, deltaY);
+}
+
+function normalizeModalTranslate() {
+    if (state.modalScale <= MODAL_MIN_SCALE) {
+        state.modalTranslateX = 0;
+        state.modalTranslateY = 0;
+        return;
+    }
+
+    const imageWidth = dom.modalImage.clientWidth;
+    const imageHeight = dom.modalImage.clientHeight;
+    const maxTranslateX = Math.max(0, (imageWidth * state.modalScale - imageWidth) / 2);
+    const maxTranslateY = Math.max(0, (imageHeight * state.modalScale - imageHeight) / 2);
+
+    state.modalTranslateX = clamp(state.modalTranslateX, -maxTranslateX, maxTranslateX);
+    state.modalTranslateY = clamp(state.modalTranslateY, -maxTranslateY, maxTranslateY);
+}
+
+function applyModalZoomTransform() {
+    normalizeModalTranslate();
+    dom.modalImage.style.transform = `translate3d(${state.modalTranslateX}px, ${state.modalTranslateY}px, 0) scale(${state.modalScale})`;
+}
+
+function resetModalZoom() {
+    state.modalScale = MODAL_MIN_SCALE;
+    state.modalTranslateX = 0;
+    state.modalTranslateY = 0;
+    state.modalPinchStartDistance = 0;
+    state.modalPinchStartScale = MODAL_MIN_SCALE;
+    state.modalPanStartX = 0;
+    state.modalPanStartY = 0;
+    state.modalPanBaseX = 0;
+    state.modalPanBaseY = 0;
+    state.modalIsPanning = false;
+    state.modalLastTapTime = 0;
+    state.modalLastTapX = 0;
+    state.modalLastTapY = 0;
+    state.modalActivePointers.clear();
+    resetSwipeState();
+    applyModalZoomTransform();
+}
+
+function toggleModalZoomByDoubleTap(clientX, clientY) {
+    const now = Date.now();
+    const deltaTime = now - state.modalLastTapTime;
+    const deltaX = Math.abs(clientX - state.modalLastTapX);
+    const deltaY = Math.abs(clientY - state.modalLastTapY);
+    const isDoubleTap = deltaTime <= DOUBLE_TAP_THRESHOLD_MS && deltaX < 30 && deltaY < 30;
+
+    state.modalLastTapTime = now;
+    state.modalLastTapX = clientX;
+    state.modalLastTapY = clientY;
+
+    if (!isDoubleTap) return;
+
+    if (state.modalScale > MODAL_MIN_SCALE) {
+        resetModalZoom();
+        return;
+    }
+
+    state.modalScale = 2;
+    state.modalTranslateX = 0;
+    state.modalTranslateY = 0;
+    applyModalZoomTransform();
 }
 
 function getViewportMeta() {
@@ -419,11 +513,65 @@ function setupModalSwipe() {
             if (!dom.imageModal.classList.contains('active')) return;
             if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
 
+            state.modalActivePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+            if (state.modalActivePointers.size === 2) {
+                const pointers = Array.from(state.modalActivePointers.values());
+                state.modalPinchStartDistance = getDistanceBetweenPoints(pointers[0], pointers[1]);
+                state.modalPinchStartScale = state.modalScale;
+                state.modalIsPanning = false;
+                resetSwipeState();
+                return;
+            }
+
+            toggleModalZoomByDoubleTap(e.clientX, e.clientY);
+
+            if (state.modalScale > MODAL_MIN_SCALE) {
+                state.modalIsPanning = true;
+                state.modalPanStartX = e.clientX;
+                state.modalPanStartY = e.clientY;
+                state.modalPanBaseX = state.modalTranslateX;
+                state.modalPanBaseY = state.modalTranslateY;
+                return;
+            }
+
             startSwipeTracking(e.clientX, e.clientY, e.pointerId);
             dom.modalImage.setPointerCapture(e.pointerId);
         });
 
         dom.modalImage.addEventListener('pointermove', (e) => {
+            if (!state.modalActivePointers.has(e.pointerId)) return;
+            state.modalActivePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+            if (state.modalActivePointers.size === 2) {
+                const pointers = Array.from(state.modalActivePointers.values());
+                const distance = getDistanceBetweenPoints(pointers[0], pointers[1]);
+                if (state.modalPinchStartDistance > 0) {
+                    state.modalScale = clamp(
+                        state.modalPinchStartScale * (distance / state.modalPinchStartDistance),
+                        MODAL_MIN_SCALE,
+                        MODAL_MAX_SCALE
+                    );
+
+                    if (state.modalScale === MODAL_MIN_SCALE) {
+                        state.modalTranslateX = 0;
+                        state.modalTranslateY = 0;
+                    }
+
+                    applyModalZoomTransform();
+                }
+                return;
+            }
+
+            if (state.modalScale > MODAL_MIN_SCALE && state.modalIsPanning) {
+                const deltaX = e.clientX - state.modalPanStartX;
+                const deltaY = e.clientY - state.modalPanStartY;
+                state.modalTranslateX = state.modalPanBaseX + deltaX;
+                state.modalTranslateY = state.modalPanBaseY + deltaY;
+                applyModalZoomTransform();
+                return;
+            }
+
             if (!state.swipeInProgress) return;
             if (state.swipeActivePointerId !== e.pointerId) return;
 
@@ -431,13 +579,29 @@ function setupModalSwipe() {
         });
 
         dom.modalImage.addEventListener('pointerup', (e) => {
+            state.modalActivePointers.delete(e.pointerId);
+
+            if (state.modalActivePointers.size < 2) {
+                state.modalPinchStartDistance = 0;
+            }
+
+            if (state.modalScale > MODAL_MIN_SCALE) {
+                state.modalIsPanning = false;
+                return;
+            }
+
             if (!state.swipeInProgress) return;
             if (state.swipeActivePointerId !== e.pointerId) return;
 
             finishSwipeTracking(e.clientX, e.clientY);
         });
 
-        dom.modalImage.addEventListener('pointercancel', () => {
+        dom.modalImage.addEventListener('pointercancel', (e) => {
+            state.modalActivePointers.delete(e.pointerId);
+            if (state.modalActivePointers.size < 2) {
+                state.modalPinchStartDistance = 0;
+            }
+            state.modalIsPanning = false;
             resetSwipeState();
         });
 
@@ -446,21 +610,89 @@ function setupModalSwipe() {
 
     dom.modalImage.addEventListener('touchstart', (e) => {
         if (!dom.imageModal.classList.contains('active')) return;
+        if (e.touches.length === 2) {
+            const first = e.touches[0];
+            const second = e.touches[1];
+            state.modalPinchStartDistance = getDistanceBetweenPoints(
+                { x: first.clientX, y: first.clientY },
+                { x: second.clientX, y: second.clientY }
+            );
+            state.modalPinchStartScale = state.modalScale;
+            state.modalIsPanning = false;
+            resetSwipeState();
+            return;
+        }
+
         if (e.touches.length !== 1) return;
 
         const touch = e.touches[0];
+        toggleModalZoomByDoubleTap(touch.clientX, touch.clientY);
+
+        if (state.modalScale > MODAL_MIN_SCALE) {
+            state.modalIsPanning = true;
+            state.modalPanStartX = touch.clientX;
+            state.modalPanStartY = touch.clientY;
+            state.modalPanBaseX = state.modalTranslateX;
+            state.modalPanBaseY = state.modalTranslateY;
+            return;
+        }
+
         startSwipeTracking(touch.clientX, touch.clientY);
     }, { passive: true });
 
     dom.modalImage.addEventListener('touchmove', (e) => {
-        if (!state.swipeInProgress) return;
+        if (e.touches.length === 2) {
+            const first = e.touches[0];
+            const second = e.touches[1];
+            const distance = getDistanceBetweenPoints(
+                { x: first.clientX, y: first.clientY },
+                { x: second.clientX, y: second.clientY }
+            );
+
+            if (state.modalPinchStartDistance > 0) {
+                state.modalScale = clamp(
+                    state.modalPinchStartScale * (distance / state.modalPinchStartDistance),
+                    MODAL_MIN_SCALE,
+                    MODAL_MAX_SCALE
+                );
+
+                if (state.modalScale === MODAL_MIN_SCALE) {
+                    state.modalTranslateX = 0;
+                    state.modalTranslateY = 0;
+                }
+
+                applyModalZoomTransform();
+            }
+            return;
+        }
+
         if (e.touches.length !== 1) return;
 
         const touch = e.touches[0];
+
+        if (state.modalScale > MODAL_MIN_SCALE && state.modalIsPanning) {
+            const deltaX = touch.clientX - state.modalPanStartX;
+            const deltaY = touch.clientY - state.modalPanStartY;
+            state.modalTranslateX = state.modalPanBaseX + deltaX;
+            state.modalTranslateY = state.modalPanBaseY + deltaY;
+            applyModalZoomTransform();
+            return;
+        }
+
+        if (!state.swipeInProgress) return;
         updateSwipeTracking(touch.clientX);
     }, { passive: true });
 
     dom.modalImage.addEventListener('touchend', (e) => {
+        if (e.touches.length < 2) {
+            state.modalPinchStartDistance = 0;
+        }
+
+        if (state.modalScale > MODAL_MIN_SCALE) {
+            state.modalIsPanning = false;
+            return;
+        }
+
         if (!state.swipeInProgress) return;
 
         const touch = e.changedTouches[0];
@@ -468,6 +700,8 @@ function setupModalSwipe() {
     }, { passive: true });
 
     dom.modalImage.addEventListener('touchcancel', () => {
+        state.modalPinchStartDistance = 0;
+        state.modalIsPanning = false;
         resetSwipeState();
     }, { passive: true });
 }
