@@ -320,6 +320,8 @@ nav {
     color: rgba(255,255,255,0.5);
     border-bottom: none;
     margin-top: 8px;
+    width: 100%;
+    justify-content: center;
     text-align: center;
     letter-spacing: 0.5px;
     flex-shrink: 0;
