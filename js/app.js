@@ -490,11 +490,17 @@ function setupImageModal() {
 // Debounce function to limit search execution frequency
 function debounce(func, wait) {
     let timeout;
-    return function(...args) {
+    const debounced = function(...args) {
         const context = this;
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(context, args), wait);
     };
+
+    debounced.cancel = function() {
+        clearTimeout(timeout);
+    };
+
+    return debounced;
 }
 
 const performSearch = debounce((query) => {
@@ -667,6 +673,7 @@ function setupEventListeners() {
 
     // Clear Search Button
     dom.clearBtn.addEventListener('click', () => {
+        performSearch.cancel();
         dom.searchInput.value = '';
         dom.searchResults.style.display = 'none';
         dom.clearBtn.style.display = 'none';
@@ -693,6 +700,7 @@ function setupEventListeners() {
     dom.searchResults.addEventListener('click', (e) => {
         const item = e.target.closest('.search-item');
         if (item) {
+            performSearch.cancel();
             const id = parseInt(item.dataset.id);
             const selectedQuery = dom.searchInput.value.toLowerCase().trim();
             state.currentId = id;
