@@ -587,6 +587,7 @@ nav {
         top: 0;
         bottom: 0;
         height: auto;
+        min-height: -webkit-fill-available;
         width: 60px;
         z-index: 999;
         transition: width 0.3s ease;
@@ -600,6 +601,13 @@ nav {
     .sidebar.expanded {
         width: 90%;
         max-width: 300px;
+    }
+
+    @supports (height: 100dvh) {
+        .sidebar {
+            height: 100dvh;
+            bottom: auto;
+        }
     }
     
     /* Mobile always shows collapsed visual style by default */
