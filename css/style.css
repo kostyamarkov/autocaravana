@@ -3,6 +3,7 @@
     --primary-color: #2c3e50;
     --secondary-color: #34495e;
     --accent-color: #3498db;
+    --warning-color: #d32f2f;
     --bg-color: #f4f7f6;
     --text-color: #333;
     --text-muted: #666;
@@ -32,6 +33,10 @@ body {
     color: var(--text-color);
     height: var(--app-height);
     overflow: hidden;
+}
+
+.warning-text {
+    color: var(--warning-color);
 }
 
 /* Раскладка (Layout) */
