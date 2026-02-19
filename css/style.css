@@ -596,9 +596,10 @@ nav {
         display: flex;
         flex-direction: column;
         overflow: visible;
+        isolation: isolate;
     }
 
-    .sidebar::after {
+    .sidebar::before {
         content: '';
         position: fixed;
         left: 0;
@@ -607,7 +608,7 @@ nav {
         height: 100lvh;
         background-color: var(--primary-color);
         pointer-events: none;
-        z-index: 998;
+        z-index: -1;
     }
     
     /* When expanding on mobile */
@@ -616,7 +617,7 @@ nav {
         max-width: 300px;
     }
 
-    .sidebar.expanded::after {
+    .sidebar.expanded::before {
         width: min(90vw, 300px);
     }
 
