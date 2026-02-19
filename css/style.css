@@ -588,6 +588,7 @@ nav {
         bottom: 0;
         height: auto;
         min-height: -webkit-fill-available;
+        padding-bottom: env(safe-area-inset-bottom);
         width: 60px;
         z-index: 999;
         transition: width 0.3s ease;
@@ -603,9 +604,9 @@ nav {
         max-width: 300px;
     }
 
-    @supports (height: 100dvh) {
+    @supports (height: 100lvh) {
         .sidebar {
-            height: 100dvh;
+            height: 100lvh;
             bottom: auto;
         }
     }
