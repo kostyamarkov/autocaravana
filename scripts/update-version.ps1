@@ -10,11 +10,16 @@ if (Test-Path $versionFile) {
     $versionString = (Get-Content -Path $versionFile -Raw).Trim()
     
     if ($versionString) {
-        # Parse version string (format: "YYYY-MM-DD hash")
+        # Parse version string
         $parts = $versionString -split '\s+'
-        if ($parts.Count -ge 2) {
-            $date = $parts[0]
-            $commit = $parts[1]
+        if ($parts.Count -ge 1) {
+            if ($parts.Count -ge 2) {
+                $date = $parts[0]
+                $commit = $parts[1]
+            } else {
+                $date = $parts[0]
+                $commit = ""
+            }
             
             # Create version.js content
             $jsContent = @"
@@ -31,7 +36,7 @@ export const VERSION = {
             Write-Host "     Version: $versionString"
         } else {
             Write-Host "[ERROR] Invalid version format in docs/version.txt"
-            Write-Host "        Expected format: YYYY-MM-DD hash"
+            Write-Host "        Expected format: YYYY-MM-DD hash or YYYY.MM.DD.HHMM"
             exit 1
         }
     } else {
