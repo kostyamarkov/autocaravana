@@ -24,6 +24,7 @@ const sectionIcons = {
 
 // --- State ---
 const isMobile = () => window.innerWidth <= 768;
+const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 const state = {
     lang: 'ru',
@@ -40,7 +41,10 @@ const state = {
     swipeStartY: 0,
     swipeCurrentX: 0,
     swipeActivePointerId: null,
-    swipeInProgress: false
+    swipeInProgress: false,
+    initialViewportContent: '',
+    searchViewportLocked: false,
+    wasMobileViewport: isMobile()
 };
 
 const SWIPE_THRESHOLD_PX = 50;
@@ -68,9 +72,15 @@ const dom = {
 
 // --- Initialization ---
 function init() {
+    updateAppViewportHeight();
     applyInitialState();
     setupEventListeners();
     renderApp();
+}
+
+function updateAppViewportHeight() {
+    const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    document.documentElement.style.setProperty('--app-height', `${viewportHeight}px`);
 }
 
 function applyInitialState() {
@@ -333,6 +343,40 @@ function resetSwipeState() {
     state.swipeInProgress = false;
 }
 
+function getViewportMeta() {
+    return document.querySelector('meta[name="viewport"]');
+}
+
+function lockViewportForSearch() {
+    if (!isIOS()) return;
+
+    const viewportMeta = getViewportMeta();
+    if (!viewportMeta || state.searchViewportLocked) return;
+
+    if (!state.initialViewportContent) {
+        state.initialViewportContent = viewportMeta.getAttribute('content') || 'width=device-width, initial-scale=1.0';
+    }
+
+    viewportMeta.setAttribute('content', `${state.initialViewportContent}, maximum-scale=1`);
+    state.searchViewportLocked = true;
+}
+
+function restoreViewportAfterSearch() {
+    if (!isIOS()) return;
+
+    const viewportMeta = getViewportMeta();
+    if (!viewportMeta) return;
+
+    if (document.activeElement === dom.searchInput) {
+        dom.searchInput.blur();
+    }
+
+    if (state.searchViewportLocked) {
+        viewportMeta.setAttribute('content', state.initialViewportContent || 'width=device-width, initial-scale=1.0');
+        state.searchViewportLocked = false;
+    }
+}
+
 function startSwipeTracking(startX, startY, pointerId = null) {
     state.swipeStartX = startX;
     state.swipeStartY = startY;
@@ -527,6 +571,7 @@ function setupEventListeners() {
     window.addEventListener('click', (e) => {
         if (!e.target.closest('.search-box')) {
             dom.searchResults.style.display = 'none';
+            restoreViewportAfterSearch();
         }
     });
 
@@ -573,13 +618,19 @@ function setupEventListeners() {
 
     // Handle window resize for mobile/desktop switch
     window.addEventListener('resize', () => {
-        if (isMobile()) {
+        updateAppViewportHeight();
+
+        const nowMobile = isMobile();
+        const switchedToMobile = nowMobile && !state.wasMobileViewport;
+        const switchedToDesktop = !nowMobile && state.wasMobileViewport;
+
+        if (switchedToMobile) {
             // Switched to mobile mode - show collapsed menu (70px)
             dom.sidebar.classList.remove('collapsed');
             dom.sidebar.classList.remove('expanded');
             dom.layout.classList.remove('menu-open');
             state.sidebarExpanded = false;
-        } else {
+        } else if (switchedToDesktop) {
             // Switched to desktop - apply saved collapsed state
             dom.sidebar.classList.remove('expanded');
             dom.layout.classList.remove('menu-open');
@@ -589,11 +640,29 @@ function setupEventListeners() {
                 dom.sidebar.classList.remove('collapsed');
             }
         }
+
+        state.wasMobileViewport = nowMobile;
     });
+
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', updateAppViewportHeight);
+    }
 
     // Search Input
     dom.searchInput.addEventListener('input', (e) => {
         performSearch(e.target.value.toLowerCase().trim());
+    });
+
+    dom.searchInput.addEventListener('focus', () => {
+        lockViewportForSearch();
+    });
+
+    dom.searchInput.addEventListener('blur', () => {
+        setTimeout(() => {
+            if (document.activeElement !== dom.searchInput) {
+                restoreViewportAfterSearch();
+            }
+        }, 0);
     });
 
     // Clear Search Button
@@ -601,6 +670,7 @@ function setupEventListeners() {
         dom.searchInput.value = '';
         dom.searchResults.style.display = 'none';
         dom.clearBtn.style.display = 'none';
+        restoreViewportAfterSearch();
         loadSection(); // Reload current section without highlight
     });
 
@@ -626,6 +696,7 @@ function setupEventListeners() {
             const id = parseInt(item.dataset.id);
             state.currentId = id;
             dom.searchResults.style.display = 'none';
+            restoreViewportAfterSearch();
             renderMenu();
             loadSection(dom.searchInput.value.toLowerCase().trim());
 
