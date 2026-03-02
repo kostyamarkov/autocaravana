@@ -78,8 +78,10 @@ function detectBrowserLang() {
         .filter(Boolean)
         .map(lang => lang.toLowerCase());
 
-    if (normalized.some(lang => lang.startsWith('en'))) return 'en';
-    if (normalized.some(lang => lang.startsWith('ru'))) return 'ru';
+    for (const lang of normalized) {
+        if (lang.startsWith('en')) return 'en';
+        if (lang.startsWith('ru')) return 'ru';
+    }
 
     return 'ru';
 }
