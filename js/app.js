@@ -22,12 +22,72 @@ const sectionIcons = {
     17: 'return.png'
 };
 
+const uiText = {
+    ru: {
+        htmlLang: 'ru',
+        menuToggleAria: 'Переключить меню',
+        menuToggleTitle: 'Свернуть/развернуть меню',
+        searchPlaceholder: 'Поиск по тексту...',
+        clearSearchAria: 'Очистить поиск',
+        loadingTitle: 'Загрузка...',
+        versionLabel: 'Версия',
+        searchMinChars: 'Введите хотя бы 3 символа',
+        searchNoResults: 'Совпадений не найдено',
+        missingPhoto: 'Фотография отсутствует',
+        modalImageAlt: 'Увеличенное изображение',
+        modalPrevAria: 'Предыдущее изображение',
+        modalNextAria: 'Следующее изображение',
+        modalCloseAria: 'Закрыть изображение',
+        photoAltSuffix: 'фото'
+    },
+    en: {
+        htmlLang: 'en',
+        menuToggleAria: 'Toggle menu',
+        menuToggleTitle: 'Collapse/expand menu',
+        searchPlaceholder: 'Search in text...',
+        clearSearchAria: 'Clear search',
+        loadingTitle: 'Loading...',
+        versionLabel: 'Version',
+        searchMinChars: 'Enter at least 3 characters',
+        searchNoResults: 'No matches found',
+        missingPhoto: 'Photo is missing',
+        modalImageAlt: 'Enlarged image',
+        modalPrevAria: 'Previous image',
+        modalNextAria: 'Next image',
+        modalCloseAria: 'Close image',
+        photoAltSuffix: 'photo'
+    }
+};
+
+function getUiText() {
+    return uiText[state.lang] || uiText.ru;
+}
+
 // --- State ---
 const isMobile = () => window.innerWidth <= 768;
 const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
+const savedLang = localStorage.getItem('appLang');
+
+function detectBrowserLang() {
+    const browserLanguages = Array.isArray(navigator.languages) && navigator.languages.length
+        ? navigator.languages
+        : [navigator.language || navigator.userLanguage || ''];
+
+    const normalized = browserLanguages
+        .filter(Boolean)
+        .map(lang => lang.toLowerCase());
+
+    if (normalized.some(lang => lang.startsWith('en'))) return 'en';
+    if (normalized.some(lang => lang.startsWith('ru'))) return 'ru';
+
+    return 'ru';
+}
+
+const initialLang = (savedLang === 'ru' || savedLang === 'en') ? savedLang : detectBrowserLang();
+
 const state = {
-    lang: 'ru',
+    lang: initialLang,
     currentId: 1,
     // Desktop: expanded by default (collapsed = false), unless explicitly set in localStorage
     // Mobile: sidebarCollapsed not used (uses sidebarExpanded instead)
@@ -188,8 +248,25 @@ function renderApp() {
 }
 
 function updateStaticText() {
+    const ui = getUiText();
+
     dom.sidebarTitle.textContent = contentData[state.lang].title;
     document.title = contentData[state.lang].title;
+    document.documentElement.lang = ui.htmlLang;
+
+    dom.menuToggleBtn.setAttribute('aria-label', ui.menuToggleAria);
+    dom.menuToggleBtn.setAttribute('title', ui.menuToggleTitle);
+    dom.searchInput.setAttribute('placeholder', ui.searchPlaceholder);
+    dom.clearBtn.setAttribute('aria-label', ui.clearSearchAria);
+
+    if (!dom.contentTitle.textContent || dom.contentTitle.textContent.trim() === '' || dom.contentTitle.textContent.trim() === 'Загрузка...' || dom.contentTitle.textContent.trim() === 'Loading...') {
+        dom.contentTitle.textContent = ui.loadingTitle;
+    }
+
+    dom.modalImage.setAttribute('alt', ui.modalImageAlt);
+    dom.modalPrev.setAttribute('aria-label', ui.modalPrevAria);
+    dom.modalNext.setAttribute('aria-label', ui.modalNextAria);
+    dom.modalClose.setAttribute('aria-label', ui.modalCloseAria);
     
     // Update active lang button
     dom.langButtons.forEach(btn => {
@@ -244,7 +321,7 @@ function renderMenu() {
     // Add version info at the bottom of menu
     const versionItem = document.createElement('li');
     versionItem.classList.add('menu-version');
-    versionItem.textContent = `Версия: ${VERSION.full}`;
+    versionItem.textContent = `${getUiText().versionLabel}: ${VERSION.full}`;
     dom.menuList.appendChild(versionItem);
 }
 
@@ -282,19 +359,20 @@ function loadSection(highlightText = '') {
 // --- Helpers ---
 
 function processContentImages(section) {
+    const ui = getUiText();
     let content = section.content;
     
     // Replace [Image X] placeholders
     if (section.images && section.images.length > 0) {
         section.images.forEach((url, index) => {
             const placeholder = `[Image ${index + 1}]`;
-            const imgHtml = `<img src="${url}" class="content-img" alt="${section.title} фото ${index + 1}" loading="lazy">`;
+            const imgHtml = `<img src="${url}" class="content-img" alt="${section.title} ${ui.photoAltSuffix} ${index + 1}" loading="lazy">`;
             content = content.replace(placeholder, imgHtml);
         });
     }
 
     // Replace remaining placeholders with gray boxes
-    content = content.replace(/\[Image \d+\]/g, '<div class="img-placeholder">Фотография отсутствует</div>');
+    content = content.replace(/\[Image \d+\]/g, `<div class="img-placeholder">${ui.missingPhoto}</div>`);
     
     return content;
 }
@@ -745,10 +823,11 @@ function debounce(func, wait) {
 }
 
 const performSearch = debounce((query) => {
+    const ui = getUiText();
     dom.clearBtn.style.display = query ? 'block' : 'none';
     
     if (query.length < 3) {
-        displaySearchMessage('Введите хотя бы 3 символа');
+        displaySearchMessage(ui.searchMinChars);
         return;
     }
 
@@ -793,7 +872,7 @@ function displaySearchResults(hits, query) {
         `).join('');
         dom.searchResults.style.display = 'block';
     } else {
-        displaySearchMessage('Совпадений не найдено');
+        displaySearchMessage(getUiText().searchNoResults);
     }
 }
 
@@ -923,20 +1002,20 @@ function setupEventListeners() {
         loadSection(); // Reload current section without highlight
     });
 
-    // TODO: Реализовать локализацию RU/EN в будущем
     // Language Switcher
-    // dom.langButtons.forEach(btn => {
-    //     btn.addEventListener('click', (e) => {
-    //         const newLang = e.target.dataset.lang;
-    //         if (state.lang !== newLang) {
-    //             state.lang = newLang;
-    //             // Try to keep current ID if exists in new lang, else reset to 1
-    //             const exists = contentData[newLang].sections.some(s => s.id === state.currentId);
-    //             if (!exists) state.currentId = 1;
-    //             renderApp();
-    //         }
-    //     });
-    // });
+    dom.langButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const newLang = e.target.dataset.lang;
+            if (state.lang !== newLang) {
+                state.lang = newLang;
+                localStorage.setItem('appLang', newLang);
+                // Try to keep current ID if exists in new lang, else reset to 1
+                const exists = contentData[newLang].sections.some(s => s.id === state.currentId);
+                if (!exists) state.currentId = 1;
+                renderApp();
+            }
+        });
+    });
 
     // Handle clicks on Search Results (Event Delegation)
     dom.searchResults.addEventListener('click', (e) => {
