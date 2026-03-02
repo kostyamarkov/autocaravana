@@ -337,9 +337,11 @@ nav {
 
 .content-header h2 { margin: 0; font-size: 1.5rem; color: var(--primary-color); }
 
-/* TODO: Реализовать локализацию RU/EN в будущем */
 .lang-switcher {
-    display: none;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .lang-btn {
@@ -348,7 +350,7 @@ nav {
     background: transparent;
     cursor: pointer;
     border-radius: 4px;
-    margin-left: 5px;
+    margin-left: 0;
     transition: all 0.2s;
 }
 
