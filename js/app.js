@@ -56,6 +56,23 @@ const uiText = {
         modalNextAria: 'Next image',
         modalCloseAria: 'Close image',
         photoAltSuffix: 'photo'
+    },
+    pt: {
+        htmlLang: 'pt',
+        menuToggleAria: 'Alternar menu',
+        menuToggleTitle: 'Recolher/expandir menu',
+        searchPlaceholder: 'Pesquisar no texto...',
+        clearSearchAria: 'Limpar pesquisa',
+        loadingTitle: 'A carregar...',
+        versionLabel: 'Versao',
+        searchMinChars: 'Introduza pelo menos 3 caracteres',
+        searchNoResults: 'Nenhuma correspondencia encontrada',
+        missingPhoto: 'Fotografia em falta',
+        modalImageAlt: 'Imagem ampliada',
+        modalPrevAria: 'Imagem anterior',
+        modalNextAria: 'Imagem seguinte',
+        modalCloseAria: 'Fechar imagem',
+        photoAltSuffix: 'foto'
     }
 };
 
@@ -79,6 +96,7 @@ function detectBrowserLang() {
         .map(lang => lang.toLowerCase());
 
     for (const lang of normalized) {
+        if (lang.startsWith('pt')) return 'pt';
         if (lang.startsWith('en')) return 'en';
         if (lang.startsWith('ru')) return 'ru';
     }
@@ -86,7 +104,7 @@ function detectBrowserLang() {
     return 'ru';
 }
 
-const initialLang = (savedLang === 'ru' || savedLang === 'en') ? savedLang : detectBrowserLang();
+const initialLang = (savedLang === 'ru' || savedLang === 'en' || savedLang === 'pt') ? savedLang : detectBrowserLang();
 
 const state = {
     lang: initialLang,
@@ -1008,6 +1026,7 @@ function setupEventListeners() {
     dom.langButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
             const newLang = e.target.dataset.lang;
+            if (!contentData[newLang]) return;
             if (state.lang !== newLang) {
                 state.lang = newLang;
                 localStorage.setItem('appLang', newLang);
